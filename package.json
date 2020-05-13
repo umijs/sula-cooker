@@ -7,7 +7,9 @@
     "postinstall": "umi generate tmp",
     "prettier": "prettier --write '**/*.{js,jsx,tsx,ts,less,md,json}'",
     "test": "umi-test",
-    "test:coverage": "umi-test --coverage"
+    "test:coverage": "umi-test --coverage",
+    "predeploy": "npm run build",
+    "deploy": "now deploy ./dist -n cook --prod --confirm"
   },
   "gitHooks": {
     "pre-commit": "lint-staged"

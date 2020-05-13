@@ -6,9 +6,14 @@ import {
   RedoOutlined,
   EyeOutlined,
 } from '@ant-design/icons';
+import Mock from 'mockjs';
 
 import 'antd/dist/antd.min.css';
 import '../mock';
+
+Mock.setup({
+  timeout: '1000-2000',
+});
 
 Icon.iconRegister({
   edit: {

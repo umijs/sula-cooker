@@ -1,5 +1,5 @@
-const { Random, mock } = require('mockjs');
-const moment = require('moment');
+import { Random, mock } from 'mockjs';
+import moment from 'moment';
 
 const status = ['dispatching', 'success', 'warning'];
 
@@ -241,7 +241,6 @@ mock('/api/manage/list.json', 'post', function(req) {
 mock('/api/manage/listnopag.json', 'post', function(req) {
   const { body } = req;
   const data = listApi(JSON.parse(body), true);
-  logInfo(req, data);
   return data;
 });
 
