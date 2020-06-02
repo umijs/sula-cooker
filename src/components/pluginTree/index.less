@@ -1,0 +1,20 @@
+.card {
+  flex-basis: 100%;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+  &:hover {
+    border-color: rgb(64, 137, 247);
+    .icon {
+      display: block;
+    }
+  }
+}
+
+.icon {
+  position: absolute;
+  right: 10px;
+  top: 15px;
+  display: none;
+  z-index: 99;
+}

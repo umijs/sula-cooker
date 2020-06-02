@@ -1,15 +1,20 @@
 import React from 'react';
-import { Layout, Space } from 'antd';
-import { DingtalkOutlined, AlipayCircleOutlined } from '@ant-design/icons';
+import { Layout, Space, Tooltip } from 'antd';
+import {
+  DingtalkOutlined,
+  AlipayCircleOutlined,
+  GithubOutlined,
+} from '@ant-design/icons';
 import Nav from '@sula/nav';
 import { ConfigProvider } from 'sula';
 import routes from '@/routes';
 import menus from '@/menus';
-import TipsButton from '@/components/tipsButton';
-import LocaleSwitch from '@/components/localeSwitch';
+import TipsSwitch from '@/components/tipsSwitch';
+import LanguageSwitch from '@/components/languageSwitch';
 import ThemeSwitch from '@/components/themeSwitch';
+import GuideWrapper from '@/components/guide';
 import { setLocale, getLocale, history } from 'umi';
-import ThemeContext from './themeContext';
+import ThemeContext, { GUIDE, DONE } from './themeContext';
 
 import zhCN from 'sula/es/localereceiver/zh_CN';
 import enUS from 'sula/es/localereceiver/en_US';
@@ -21,6 +26,7 @@ export default class LayoutComponent extends React.Component {
     hiddenCustomControls: false,
     locale: getLocale(),
     theme: 'bluebird',
+    hiddenGuideTips: localStorage.getItem(GUIDE) === DONE,
   };
 
   componentDidMount() {
@@ -74,34 +80,56 @@ export default class LayoutComponent extends React.Component {
   navRightExtraRender = () => {
     return (
       <Space className={styles.navExtra}>
-        <TipsButton
+        <TipsSwitch
           key={this.state.hiddenCustomControls}
           onClick={this.toggleQuestion}
         />
         {/* <ThemeSwitch handleChangeTheme={this.handleChangeTheme} /> */}
-        <LocaleSwitch handleChangeLanguage={this.handleChangeLanguage} />
+        <LanguageSwitch handleChangeLanguage={this.handleChangeLanguage} />
+        <Tooltip title="github">
+          <GithubOutlined
+            onClick={() => {
+              window.open('https://github.com/umijs/sula');
+            }}
+            className={styles.github}
+          />
+        </Tooltip>
       </Space>
     );
   };
 
+  toggleGuideTips = visible => {
+    this.setState({
+      hiddenGuideTips: visible,
+    });
+  };
+
   render() {
     const { children } = this.props;
-    const { hiddenCustomControls, locale, theme } = this.state;
+    const { hiddenCustomControls, hiddenGuideTips, locale, theme } = this.state;
 
     return (
-      <Layout className={styles.wrapper}>
-        <Layout.Content className={styles.content}>
-          <ConfigProvider
-            history={history}
-            theme={theme}
-            locale={locale === 'zh-CN' ? zhCN : enUS}
-          >
-            <ThemeContext.Provider value={{ hiddenCustomControls }}>
-              {children}
-            </ThemeContext.Provider>
-          </ConfigProvider>
-        </Layout.Content>
-      </Layout>
+      <ThemeContext.Provider
+        value={{
+          hiddenCustomControls,
+          hiddenGuideTips,
+          toggleGuideTips: this.toggleGuideTips,
+        }}
+      >
+        <GuideWrapper>
+          <Layout className={styles.wrapper}>
+            <Layout.Content className={styles.content}>
+              <ConfigProvider
+                history={history}
+                theme={theme}
+                locale={locale === 'zh-CN' ? zhCN : enUS}
+              >
+                {children}
+              </ConfigProvider>
+            </Layout.Content>
+          </Layout>
+        </GuideWrapper>
+      </ThemeContext.Provider>
     );
   }
 }

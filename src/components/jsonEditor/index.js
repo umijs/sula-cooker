@@ -1,5 +1,14 @@
-import React from 'react';
-import { Typography, Button, message, Popconfirm, Tooltip } from 'antd';
+import React, { useEffect } from 'react';
+import {
+  Typography,
+  Button,
+  message,
+  Popconfirm,
+  Tooltip,
+  Row,
+  Col,
+  Space,
+} from 'antd';
 import copy from 'copy-to-clipboard';
 import Editor, { monaco } from '@monaco-editor/react';
 import serialize, { deserialize } from '@/utils/serialize';
@@ -8,7 +17,15 @@ import {
   PlayCircleOutlined,
   DeleteOutlined,
   CopyOutlined,
+  FullscreenOutlined,
+  FullscreenExitOutlined,
 } from '@ant-design/icons';
+import validateSulaConfig from './lint';
+import * as acorn from 'acorn';
+import * as walk from 'acorn-walk';
+import ConfigTree, { iconRender, nameRender } from '@/components/configTree';
+import registerSuggestions from './suggestions';
+import style from './index.less';
 
 const { Title } = Typography;
 const STRTEMP = 'const config = ';
@@ -17,11 +34,26 @@ const getEditorValue = data => {
   return `${STRTEMP}${serialize(data, { space: 2, unsafe: true })}`;
 };
 
+let isRegister;
+let decorations = [];
+
 export default props => {
   const monacoRef = React.useRef(null);
-  const { onRun, value } = props;
+  const {
+    onRun,
+    value,
+    type,
+    onFullScreen = () => {},
+    shallowHeight = 0,
+  } = props;
 
   const editorRef = React.useRef(null);
+  const [highLightLine, setHighLightLine] = React.useState();
+  const [isFull, setFull] = React.useState(false);
+
+  const finalValue = getEditorValue(value);
+
+  const [treeData, setTreeData] = React.useState(finalValue);
 
   const handleCopy = () => {
     const jsonEditorValue = editorRef.current.getValue();
@@ -39,9 +71,13 @@ export default props => {
 
   monaco.init().then(ref => {
     monacoRef.current = ref;
+    if (!isRegister) {
+      registerSuggestions(ref);
+      isRegister = true;
+    }
   });
 
-  const onEditorDidMount = (_, editor) => {
+  const onEditorDidMount = (_monaco, editor) => {
     editorRef.current = editor;
     const model = editor.getModel();
 
@@ -71,7 +107,46 @@ export default props => {
         });
       }
     });
+
+    editor.onMouseDown(event => {
+      clearDecorations();
+      onEditorLineChange(event.target.position);
+    });
+
+    editor.onKeyDown(event => {
+      setTimeout(() => {
+        const position = editor.getPosition();
+        onEditorLineChange(position);
+        setTreeData(editor.getValue());
+      });
+    });
+
+    editor.onDidChangeModelContent(() => {
+      const content = editor.getValue();
+      const markers = monacoRef.current.editor.getModelMarkers();
+
+      if (markers.length > 0) {
+        markers.forEach(marker => {
+          monacoRef.current.editor.setModelMarkers(
+            editor.getModel(),
+            marker.owner,
+            [],
+          );
+        });
+      }
+      const ast = acorn.parse(content, { locations: true });
+      walk.full(ast, node => {
+        // if (node?.loc?.start?.column < 5) {
+        validateSulaConfig(node, monacoRef.current, editor);
+        // }
+      });
+    });
   };
+
+  function onEditorLineChange(position) {
+    const { lineNumber } = position || {};
+    setHighLightLine(lineNumber);
+  }
 
   // console.log(`点击字段： ${clickType}, 点击字段所属字段: ${type}, 提示: ${suggestionType}`);
 
@@ -82,6 +157,7 @@ export default props => {
       const res = deserialize(value);
       onRun(res);
       formatDocument();
+      setFull(false);
       message.success(`Run Success 🎉`);
     } catch (e) {
       message.error(`JSON 格式错误`);
@@ -92,9 +168,69 @@ export default props => {
     editorRef.current.setValue(`${STRTEMP}{\n\n}`);
   };
 
+  function clearDecorations() {
+    if (decorations.length) {
+      decorations = editorRef.current.deltaDecorations(decorations, []);
+    }
+  }
+
+  function setDecorations(range) {
+    const [startLineNumber, startColumn, endLineNumber, endColumn] = range;
+    const newDecorations = editorRef.current.deltaDecorations(
+      [],
+      [
+        {
+          range: {
+            endColumn,
+            endLineNumber,
+            startColumn,
+            startLineNumber,
+          },
+          options: {
+            className: 'si-editor-highlight',
+          },
+        },
+      ],
+    );
+    decorations = decorations.concat(newDecorations);
+  }
+
+  const handleSelect = (node, hasChildren) => {
+    const { loc, name } = node;
+    clearDecorations();
+    // 高亮
+    if (hasChildren) {
+      const [line, startColumn] = loc;
+      const keyPosition = [line, startColumn, line, 100];
+      setDecorations(keyPosition);
+    } else {
+      setDecorations(loc);
+    }
+    editorRef.current.revealLine(loc[0]); // 行跳转
+  };
+
+  const handleFullScreen = () => {
+    setFull(true);
+  };
+
+  const handleExitFullScreen = () => {
+    setFull(false);
+  };
+
+  useEffect(() => {
+    editorRef?.current?.layout();
+    onFullScreen && onFullScreen(isFull);
+  }, [isFull]);
+
+  useEffect(() => {
+    editorRef?.current?.layout();
+  }, [shallowHeight]);
+
+  const hasConfigTree = type !== 'editor';
+
   return (
-    <div>
-      <div style={{ marginTop: 24, overflow: 'hidden' }}>
+    <div className={isFull ? style.editorWrapper : ''}>
+      <div style={{ overflow: 'hidden' }}>
         <Title style={{ float: 'left' }} level={4}>
           代码展示
         </Title>
@@ -103,7 +239,7 @@ export default props => {
             style={{ marginLeft: 8, lineHeight: '32px', cursor: 'pointer' }}
           />
         </Tooltip>
-        <div style={{ float: 'right' }}>
+        <Space style={{ float: 'right' }}>
           <Tooltip title="运行代码">
             <Button
               shape="circle"
@@ -118,7 +254,6 @@ export default props => {
             <Tooltip title="清空代码">
               <Button
                 type="primary"
-                style={{ marginLeft: 8 }}
                 icon={<DeleteOutlined />}
                 size="small"
                 shape="circle"
@@ -131,25 +266,73 @@ export default props => {
               icon={<CopyOutlined />}
               onClick={handleCopy}
               style={{
-                marginLeft: 8,
                 border: 'none',
               }}
               shape="circle"
               size="small"
             />
           </Tooltip>
-        </div>
+          <div>
+            <Tooltip title="退出全屏">
+              <Button
+                type="primary"
+                icon={<FullscreenExitOutlined />}
+                onClick={handleExitFullScreen}
+                style={{
+                  border: 'none',
+                  display: !isFull ? 'none' : '',
+                }}
+                shape="circle"
+                size="small"
+              />
+            </Tooltip>
+            <Tooltip title="全屏编辑">
+              <Button
+                type="primary"
+                icon={<FullscreenOutlined />}
+                onClick={handleFullScreen}
+                style={{
+                  border: 'none',
+                  display: isFull ? 'none' : '',
+                }}
+                shape="circle"
+                size="small"
+              />
+            </Tooltip>
+          </div>
+        </Space>
       </div>
-      <Editor
-        height="calc(100vh - 100px)"
-        language="javascript"
-        editorDidMount={onEditorDidMount}
-        options={{
-          selectOnLineNumbers: true,
-          renderSideBySide: false,
-        }}
-        value={getEditorValue(value)}
-      />
+      <Row>
+        <Col span={hasConfigTree ? 16 : 24}>
+          <Editor
+            height={`calc(100vh - ${shallowHeight + 100}px)`}
+            language="javascript"
+            editorDidMount={onEditorDidMount}
+            options={{
+              selectOnLineNumbers: true,
+              renderSideBySide: false,
+            }}
+            value={finalValue}
+          />
+        </Col>
+        {hasConfigTree && (
+          <Col span={8}>
+            <div className={style.title}>属性节点树</div>
+            <ConfigTree
+              style={{
+                height: 'calc(100vh - 300px)',
+                overflowY: 'scroll',
+              }}
+              level={1}
+              data={treeData}
+              onSelect={handleSelect}
+              currentLine={highLightLine}
+              iconRender={iconRender}
+              nameRender={nameRender}
+            />
+          </Col>
+        )}
+      </Row>
     </div>
   );
 };

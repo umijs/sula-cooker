@@ -1,0 +1,44 @@
+// hover background
+@hover-background: #1990ffab;
+
+.si-tree {
+  font-size: 14px;
+
+  &-node {
+    &-block {
+      display: flex;
+      align-items: center;
+      padding: 2px 4px;
+      cursor: pointer;
+      user-select: none;
+      &:hover {
+        background-color: @hover-background;
+        color: #fff;
+      }
+
+      &-actived {
+        background-color: @hover-background;
+        color: #fff;
+      }
+    }
+
+    &-switcher {
+      margin-right: 2px;
+    }
+
+    &-icon {
+      margin-right: 4px;
+      display: flex;
+    }
+
+    &-name {
+    }
+  }
+}
+
+.tree-compact {
+  margin-left: 4px;
+  font-size: 13px;
+  font-style: italic;
+  color: #49aa19;
+}

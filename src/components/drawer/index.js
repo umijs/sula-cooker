@@ -5,7 +5,7 @@ export default props => {
   const { children, ...restProps } = props;
 
   return (
-    <Drawer mask closable={false} {...restProps}>
+    <Drawer mask closable={false} forceRender {...restProps}>
       {children}
     </Drawer>
   );

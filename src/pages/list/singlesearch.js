@@ -15,20 +15,32 @@ export default () => {
         title: inti.formatMessage({ id: 'list_id' }),
         sorter: true,
         render: {
-          type: 'a',
+          type: 'button',
           props: {
+            type: 'link',
+            size: 'small',
             children: 'SERIAL_NUMBER_#{text}',
             href: '#/form/card/view/#{text}',
+            style: {
+              padding: 0,
+            },
           },
         },
       },
       {
         key: 'senderName',
         title: inti.formatMessage({ id: 'list_sender' }),
+        filterRender: 'search',
       },
       {
         key: 'recipientName',
         title: inti.formatMessage({ id: 'list_recipient' }),
+        filters: [
+          { text: 'Jack', value: 'Jack' },
+          { text: 'Lucy', value: 'Lucy' },
+          { text: 'Lily', value: 'lily' },
+          { text: 'Mocy', value: 'Mocy' },
+        ],
       },
       {
         key: 'status',

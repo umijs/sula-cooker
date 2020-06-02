@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { CreateForm, StepForm } from 'sula';
-import { merge, isString, get, set, isEmpty } from 'lodash';
+import { merge, set, unset, get } from 'lodash';
 import { triggerRenderPlugin } from 'sula/es/rope/triggerPlugin';
 import getFormMode from '@/utils/getFormMode';
 import FormDrawer from './component/formDrawer';
-import ControlDrawer from '@/components/localControlJson';
-import Label from '@/components/label';
-import ActionWraper from '@/components/actionWrapper';
+import ControlDrawer from '@/components/jsonEditorDrawer';
+import TipsWrapper from '@/components/tipsWrapper';
 
 export default props => {
   const {
@@ -33,23 +32,79 @@ export default props => {
   const [clickType, setClickType] = useState('');
   const [init, setInit] = useState(false);
 
+  function deleteItem(path) {
+    const finalCode = { ...code };
+    unset(finalCode, path);
+    console.log(finalCode, path);
+    setCode(finalCode);
+    setKey(key + 1);
+  }
+
+  function addItem(name, path, position = 'left') {
+    let finalCode = { ...code };
+    const nodePath = path.slice(0, -1);
+    const node = get(finalCode, nodePath);
+    const idx = node.length + 1;
+
+    let defaultCode;
+    switch (name) {
+      case 'fields':
+        defaultCode = {
+          name: 'input' + idx,
+          label: 'input' + idx,
+          field: 'input',
+        };
+        break;
+
+      case 'actionsRender':
+        defaultCode = {
+          type: 'button',
+          props: {
+            children: '按钮' + idx,
+            type: 'primary',
+          },
+        };
+        break;
+      default:
+        return;
+    }
+
+    node.splice(
+      position === 'left' ? path[path.length - 1] : path[path.length - 1] + 1,
+      0,
+      defaultCode,
+    );
+    finalCode = set(finalCode, nodePath, node);
+
+    setCode(finalCode);
+    setKey(key + 1);
+  }
+
   const isWizard = !!(code && code.steps);
 
-  const getLabel = (data, ...rest) => {
-    const { field = {} } = data || {};
-    const clickType = isString(field) ? field : field.type;
+  const getLabel = (data, path) => {
     return (
-      <Label
-        key={rest.join('-')}
+      <TipsWrapper
+        key={path.join('-')}
+        title={data.label}
         onSet={() => {
           setControlValue(data);
-          setFlag(rest);
+          setFlag(path);
           setVisible(true);
-          setClickType(clickType);
+          setClickType('form');
+        }}
+        onDelete={() => {
+          deleteItem(path);
+        }}
+        onAddBefore={() => {
+          addItem('fields', path);
+        }}
+        onAddAfter={() => {
+          addItem('fields', path, 'right');
         }}
       >
         {data.label}
-      </Label>
+      </TipsWrapper>
     );
   };
 
@@ -57,37 +112,23 @@ export default props => {
     if (!data) return [];
     return data.map((v, idx) => {
       const { fields, steps } = v;
-      const idxArr = [...arr, idx];
       if (fields) {
         return {
           ...v,
-          fields: getLabelFields(fields, idxArr),
+          fields: getLabelFields(fields, [...arr, idx, 'fields']),
         };
       }
 
       if (steps) {
-        const newSteps = steps.map((ele, index) => {
-          const { fields } = ele;
-          const newFields = fields.map((field, i) => {
-            return {
-              ...field,
-              label: getLabel(field, idx, index, i),
-            };
-          });
-          return {
-            ...ele,
-            fields: newFields,
-          };
-        });
         return {
           ...v,
-          steps: newSteps,
+          steps: getLabelFields(steps, [...arr, idx, 'steps']),
         };
       }
 
       return {
         ...v,
-        label: getLabel(v, ...idxArr),
+        label: getLabel(v, [...arr, idx]),
       };
     });
   };
@@ -95,8 +136,8 @@ export default props => {
   const getFieldsConfig = data => {
     const { steps, fields } = data;
     return isWizard
-      ? { steps: getLabelFields(steps), fields: [] }
-      : { fields: getLabelFields(fields) };
+      ? { steps: getLabelFields(steps, ['steps']) }
+      : { fields: getLabelFields(fields, ['fields']) };
   };
 
   const [labelCode, setLabelCode] = useState({
@@ -116,6 +157,7 @@ export default props => {
     }
   }, [code]);
 
+  // 给个靠后点默认id，防止前面删掉后无数据
   const { id = 19 } = props.match.params;
 
   const handleDo = val => {
@@ -135,21 +177,11 @@ export default props => {
     const { name: oldName } = controlValue;
     const { name, ...restVal } = { ...val };
     const newVal = oldName ? { name: oldName, ...restVal } : val;
-    const { steps } = { ...code };
-    if (isWizard) {
-      if (steps[flag[0]].steps) {
-        steps[flag[0]].steps[flag[1]].fields[flag[2]] = newVal;
-      } else {
-        steps[flag[0]].fields[flag[1]] = newVal;
-      }
-      setCode({ ...code, steps });
-    } else {
-      const newFlag =
-        clickType === 'actionsRender'
-          ? flag
-          : flag.map(v => ['fields', v]).flat();
-      setCode(set({ ...code }, newFlag, newVal));
-    }
+
+    let finalCode = { ...code };
+    finalCode = set(finalCode, flag, newVal);
+    setCode(finalCode);
+
     setVisible(false);
     setKey(key + 1);
   };
@@ -172,11 +204,11 @@ export default props => {
     setKey(key + 1);
   };
 
-  const onDoubleClick = (data, namePath) => {
+  const onControlTipClick = (data, namePath) => {
     setControlValue(data);
     setFlag(namePath);
     setVisible(true);
-    setClickType(namePath[0]);
+    setClickType('actions');
   };
 
   const getClickItem = (data, name) => {
@@ -184,12 +216,22 @@ export default props => {
       return {
         type: ctx => {
           const children = triggerRenderPlugin(ctx, action);
+          const path = [name, idx];
           return (
-            <ActionWraper
-              onDoubleClick={() => onDoubleClick(action, [name, idx])}
+            <TipsWrapper
+              onSet={() => onControlTipClick(action, path)}
+              onDelete={() => {
+                deleteItem(path);
+              }}
+              onAddBefore={() => {
+                addItem('actionsRender', path);
+              }}
+              onAddAfter={() => {
+                addItem('actionsRender', path, 'right');
+              }}
             >
               {children}
-            </ActionWraper>
+            </TipsWrapper>
           );
         },
       };
@@ -215,13 +257,6 @@ export default props => {
     wizardDirection,
   );
 
-  if (!isEmpty(finalConfig.steps)) {
-    delete finalConfig.fields;
-  }
-  if (!isWizard && isEmpty(finalConfig.fields)) {
-    return null;
-  }
-
   return (
     <div>
       <Comp
@@ -232,6 +267,7 @@ export default props => {
       />
       <FormDrawer
         mode={(code && code.mode) || mode}
+        id={id}
         direction={direction}
         visible={formDrawerVisible}
         iconVisible={visible}
@@ -244,6 +280,7 @@ export default props => {
         isWizard={isWizard}
         actionsPosition={actionsPosition}
         changeActionsPosition={onActionsPositionChange}
+        width="900px"
       />
       <ControlDrawer
         clickType={clickType}
@@ -253,8 +290,6 @@ export default props => {
         }}
         value={controlValue}
         onRun={onRun}
-        onSelectCode={onRun}
-        isFormTemp={true}
       />
     </div>
   );

@@ -18,11 +18,17 @@ export default () => {
       {
         key: 'id',
         title: inti.formatMessage({ id: 'list_id' }),
+        sorter: true,
         render: {
-          type: 'a',
+          type: 'button',
           props: {
+            type: 'link',
+            size: 'small',
             children: 'SERIAL_NUMBER_#{text}',
             href: '#/form/card/view/#{text}',
+            style: {
+              padding: 0,
+            },
           },
         },
       },
