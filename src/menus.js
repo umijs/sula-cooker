@@ -1,4 +1,9 @@
-import { BulbOutlined, TableOutlined, FormOutlined } from '@ant-design/icons';
+import {
+  BulbOutlined,
+  TableOutlined,
+  FormOutlined,
+  LayoutOutlined,
+} from '@ant-design/icons';
 
 export default [
   {
@@ -56,6 +61,17 @@ export default [
       {
         name: 'StepForm',
         link: '#/form/stepform',
+      },
+    ],
+  },
+  {
+    name: 'Form Layout',
+    icon: <LayoutOutlined />,
+    hasChildren: true,
+    children: [
+      {
+        name: 'form',
+        link: '#/layout/form',
       },
     ],
   },

@@ -1,49 +1,28 @@
 {
+  "author": "Sula",
   "private": true,
   "description": "sula cooker",
   "scripts": {
     "start": "umi dev",
     "build": "umi build",
-    "postinstall": "umi generate tmp",
-    "prettier": "prettier --write '**/*.{js,jsx,tsx,ts,less,md,json}'",
-    "test": "umi-test",
-    "test:coverage": "umi-test --coverage",
     "predeploy": "npm run build",
     "deploy": "now deploy ./dist -n cook --prod --confirm"
   },
-  "gitHooks": {
-    "pre-commit": "lint-staged"
-  },
-  "lint-staged": {
-    "*.{js,jsx,less,md,json}": [
-      "prettier --write"
-    ],
-    "*.ts?(x)": [
-      "prettier --parser=typescript --write"
-    ]
-  },
   "dependencies": {
     "@monaco-editor/react": "^3.3.0",
-    "@sula/nav": "^1.0.0-alpha.2",
-    "@umijs/preset-react": "1.x",
-    "@umijs/test": "^3.1.4",
+    "@sula/nav": "1.0.0-alpha.2",
+    "antd": "^4.2.5",
+    "sula": "^1.0.0-beta.5"
+  },
+  "devDependencies": {
+    "@sula/templates": "^1.0.3",
+    "@umijs/preset-react": "^1.5.8",
     "acorn": "^7.2.0",
     "acorn-walk": "^7.1.1",
-    "antd": "^4.2.5",
     "ast-types": "^0.13.3",
-    "axios": "^0.19.2",
-    "classnames": "^2.2.6",
     "copy-to-clipboard": "^3.3.1",
-    "lint-staged": "^10.0.7",
-    "lodash": "^4.17.15",
     "mockjs": "^1.1.0",
-    "prettier": "^1.19.1",
-    "react": "^16.12.0",
-    "react-dom": "^16.12.0",
-    "sula": "^1.0.0-alpha.21",
     "umi": "^3.1.4",
-    "umi-plugin-sula": "^1.0.0-alpha.2",
-    "yorkie": "^2.0.0"
-  },
-  "author": "Sula"
+    "umi-plugin-sula": "^1.0.0-beta.1"
+  }
 }

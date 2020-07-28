@@ -13,6 +13,8 @@ import Media from '@/pages/form/media';
 import TablePlugin from '@/pages/sulaplugin/table';
 import FormPlugin from '@/pages/sulaplugin/form';
 
+import FormLayout from '@/pages/sulalayout/form';
+
 export default [
   {
     path: '/',
@@ -210,6 +212,22 @@ export default [
         name: 'NoPagination',
         path: '/list/nopagination',
         component: NoPagination,
+      },
+    ],
+  },
+  /** 布局 */
+  {
+    name: 'Layout',
+    path: '/layout',
+    routes: [
+      {
+        path: '/layout',
+        redirect: '/layout/form',
+        exact: true,
+      },
+      {
+        path: '/layout/form',
+        component: FormLayout,
       },
     ],
   },

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Popover, Space, Popconfirm } from 'antd';
+import { Popover, Space, Popconfirm, Button } from 'antd';
 import ThemeContext from '@/layout/themeContext';
 
 export default props => {
@@ -25,22 +25,38 @@ export default props => {
   };
 
   const content = (
-    <Space>
-      <a
-        onClick={() => {
-          onSet();
-          setVisible(false);
-        }}
-      >
-        属性配置
-      </a>
-      {onAddBefore && <a onClick={onAddBefore}>前加一项</a>}
-      {onAddAfter && <a onClick={onAddAfter}>后加一项</a>}
-      {onDelete && (
-        <Popconfirm title="确认删除?" onConfirm={onDelete}>
-          <a>删除该项</a>
-        </Popconfirm>
-      )}
+    <Space direction="vertical">
+      <Space>
+        <Button
+          type="primary"
+          onClick={() => {
+            onSet();
+            setVisible(false);
+          }}
+        >
+          属性配置
+        </Button>
+        {onDelete && (
+          <Popconfirm title="确认删除?" onConfirm={onDelete}>
+            <Button type="primary" type="primary">
+              删除该项
+            </Button>
+          </Popconfirm>
+        )}
+      </Space>
+
+      <Space>
+        {onAddBefore && (
+          <Button type="primary" ghost onClick={onAddBefore}>
+            前加一项
+          </Button>
+        )}
+        {onAddAfter && (
+          <Button type="primary" ghost onClick={onAddAfter}>
+            后加一项
+          </Button>
+        )}
+      </Space>
     </Space>
   );
 

@@ -3,6 +3,7 @@ import QueryTable from '@/components/jsonTableTemp';
 import { useIntl } from 'umi';
 
 export default () => {
+  // 国际化配置
   const inti = useIntl();
 
   const config = {

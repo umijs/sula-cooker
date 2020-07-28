@@ -54,22 +54,6 @@ export default () => {
       {
         title: inti.formatMessage({ id: 'plugins_title_badge' }),
         render: [
-          // {
-          //   type: 'badge',
-          //   props: {
-          //     status: 'success',
-          //     text: 'up',
-          //     shape: 'up'
-          //   }
-          // },
-          // {
-          //   type: 'badge',
-          //   props: {
-          //     status: 'error',
-          //     shape: 'down',
-          //     text: 'down'
-          //   }
-          // },
           {
             type: 'badge',
             props: {

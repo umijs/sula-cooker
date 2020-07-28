@@ -7,43 +7,18 @@ const source = [
   { text: 'sula', value: 'sula' },
 ];
 
-const treeData = [
-  {
-    title: 'Node1',
-    value: '0-0',
-    key: '0-0',
-    children: [
-      {
-        title: 'Child Node1',
-        value: '0-0-1',
-        key: '0-0-1',
-      },
-      {
-        title: 'Child Node2',
-        value: '0-0-2',
-        key: '0-0-2',
-      },
-    ],
-  },
-  {
-    title: 'Node2',
-    value: '0-1',
-    key: '0-1',
-  },
-];
-
 const cascaderSource = [
   {
     value: 'zhejiang',
-    label: 'Zhejiang',
+    text: 'Zhejiang',
     children: [
       {
         value: 'hangzhou',
-        label: 'Hangzhou',
+        text: 'Hangzhou',
         children: [
           {
             value: 'xihu',
-            label: 'West Lake',
+            text: 'West Lake',
           },
         ],
       },
@@ -51,15 +26,15 @@ const cascaderSource = [
   },
   {
     value: 'jiangsu',
-    label: 'Jiangsu',
+    text: 'Jiangsu',
     children: [
       {
         value: 'nanjing',
-        label: 'Nanjing',
+        text: 'Nanjing',
         children: [
           {
             value: 'zhonghuamen',
-            label: 'Zhong Hua Men',
+            text: 'Zhong Hua Men',
           },
         ],
       },
@@ -76,7 +51,7 @@ for (let i = 0; i < 20; i++) {
   });
 }
 
-export default props => {
+export default (props) => {
   const inti = useIntl();
 
   const config = {
@@ -140,20 +115,6 @@ export default props => {
               },
             },
           },
-          // {
-          //   name: 'autocomplete',
-          //   label: 'autocomplete',
-          //   initialSource: source,
-          //   field: {
-          //     type: 'autocomplete',
-          //     props: {
-          //       placeholder: inti.formatMessage({ id: 'plugins_placeholder_input' }),
-          //       filterOption: (inputValue, option) => {
-          //         return option.props.children.indexOf(inputValue) !== -1;
-          //       },
-          //     },
-          //   },
-          // },
         ],
       },
       {
@@ -256,17 +217,6 @@ export default props => {
               },
             },
           },
-          // {
-          //   name: 'treeselect',
-          //   label: 'treeselect',
-          //   initialSource: treeData,
-          //   field: {
-          //     type: 'treeselect',
-          //     props: {
-          //       placeholder: inti.formatMessage({ id: 'plugins_placeholder_input' }),
-          //     },
-          //   },
-          // },
           {
             name: 'cascader',
             label: 'cascader',
@@ -275,23 +225,6 @@ export default props => {
               type: 'cascader',
             },
           },
-          // {
-          //   name: 'transfer',
-          //   label: 'transfer',
-          //   itemLayout: {
-          //     labelCol: {
-          //       span: 6,
-          //     },
-          //     wrapperCol: {
-          //       span: 16,
-          //     },
-          //   },
-          //   initialSource: transferSource,
-          //   valuePropName: 'targetKeys',
-          //   field: {
-          //     type: 'transfer',
-          //   },
-          // },
         ],
       },
       {
