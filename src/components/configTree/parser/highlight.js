@@ -1,5 +1,5 @@
-const isHightLight = (hightLightData, highLightLine) => {
-  const { children, loc = [0, 0, 0, 0] } = hightLightData;
+const isHighLight = (highLightData, highLightLine) => {
+  const { children, loc = [0, 0, 0, 0] } = highLightData;
   const [lineStart, , lineEnd] = loc;
   if (children) {
     return isActiveObj(highLightLine, lineStart, lineEnd);
@@ -7,13 +7,13 @@ const isHightLight = (hightLightData, highLightLine) => {
   return lineStart <= highLightLine && lineEnd >= highLightLine;
 };
 
-const hasHighLightChildren = (hightLightData, highLightLine) => {
-  const { children, loc = [0, 0, 0, 0] } = hightLightData;
+const hasHighLightChildren = (highLightData, highLightLine) => {
+  const { children, loc = [0, 0, 0, 0] } = highLightData;
   const [lineStart, , lineEnd] = loc;
   if (children) {
     return (
       isActiveObj(highLightLine, lineStart, lineEnd) ||
-      children.some(v => hasHighLightChildren(v, highLightLine))
+      children.some(v => v && hasHighLightChildren(v, highLightLine))
     );
   }
   return lineStart <= highLightLine && lineEnd >= highLightLine;
@@ -29,7 +29,7 @@ function createHighLightTreeData(treeData, highLightLine) {
   data.forEach(node => {
     if (!node) return;
     node.toggled = hasHighLightChildren(node, highLightLine);
-    node.active = isHightLight(node, highLightLine);
+    node.active = isHighLight(node, highLightLine);
     if (node.children) {
       if (node.active) {
         node.children = clearActiveNode(node.children);
