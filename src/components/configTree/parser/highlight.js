@@ -7,7 +7,7 @@ const isHightLight = (hightLightData, highLightLine) => {
   return lineStart <= highLightLine && lineEnd >= highLightLine;
 };
 
-const hasHighLightChildren = (hightLightData, highLightLine) => {
+const hasHighLightChildren = (hightLightData = {}, highLightLine) => {
   const { children, loc = [0, 0, 0, 0] } = hightLightData;
   const [lineStart, , lineEnd] = loc;
   if (children) {

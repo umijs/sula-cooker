@@ -324,7 +324,6 @@ function validate(node, name) {
    */
 
   if (name === 'mode') {
-    console.log('mode', node, node);
     if (!isModeType(node)) {
       errorMarks(node, 'mode可选类型为view create edit');
       return;

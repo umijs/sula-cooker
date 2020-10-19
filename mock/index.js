@@ -66,8 +66,8 @@ function getPagingData(
 ) {
   let filteredDataSource = dataSource;
   if (Object.keys(filters).length) {
-    filteredDataSource = filteredDataSource.filter(row => {
-      const isMatched = Object.keys(filters).every(key => {
+    filteredDataSource = filteredDataSource.filter((row) => {
+      const isMatched = Object.keys(filters).every((key) => {
         const filterValue = filters[key];
         const cellValue = row[key];
         if (filterValue === null) {
@@ -79,6 +79,17 @@ function getPagingData(
           }
           if (typeof cellValue === 'string') {
             return filterValue.includes(cellValue);
+          }
+          if (Array.isArray(cellValue) && cellValue.length) {
+            return (
+              moment(filterValue[0]).valueOf() <=
+                moment(cellValue[0]).valueOf() &&
+              moment(cellValue[0]).valueOf() <=
+                moment(filterValue[1]).valueOf() &&
+              moment(filterValue[0]).valueOf() <=
+                moment(cellValue[1]).valueOf() &&
+              moment(cellValue[1]).valueOf() <= moment(filterValue[1]).valueOf()
+            );
           }
           return true;
         }
@@ -142,7 +153,7 @@ const listApi = (body, nopag) => {
   return getPagingData({ current, pageSize }, filters, sorter, nopag);
 };
 
-const addApi = body => {
+const addApi = (body) => {
   const { name, time = [], ...restReq } = body;
   dataSource.forEach(({ id }) => {
     if (Number(id) > Number(maxId)) {
@@ -152,7 +163,7 @@ const addApi = body => {
   dataSource.unshift({
     id: String(maxId * 1 + 1),
     status: Random.pick(status),
-    time: time.map(v => moment(v).format('YYYY-MM-DD')),
+    time: time.map((v) => moment(v).format('YYYY-MM-DD')),
     ...restReq,
   });
   return success;
@@ -160,24 +171,24 @@ const addApi = body => {
 
 const deleteApi = ({ rowKeys }) => {
   const selectedRowKeys = Array.isArray(rowKeys) ? rowKeys : [rowKeys];
-  selectedRowKeys.forEach(id => {
-    dataSource = dataSource.filter(v => v.id != id);
+  selectedRowKeys.forEach((id) => {
+    dataSource = dataSource.filter((v) => v.id != id);
   });
   return success;
 };
 
-const detailApi = body => {
+const detailApi = (body) => {
   const { id } = body;
-  const data = dataSource.find(v => v.id == id);
+  const data = dataSource.find((v) => v.id == id);
   return {
     ...success,
     data,
   };
 };
 
-const getList = data => ({
+const getList = (data) => ({
   ...success,
-  data: data.map(v => ({ text: v, value: v })),
+  data: data.map((v) => ({ text: v, value: v })),
 });
 
 const getPlugins = () => ({
@@ -231,62 +242,62 @@ function logInfo(req, data) {
   console.log('');
 }
 
-mock('/api/manage/list.json', 'post', function(req) {
+mock('/api/manage/list.json', 'post', function (req) {
   const { body } = req;
   const data = listApi(JSON.parse(body));
   logInfo(req, data);
   return data;
 });
 
-mock('/api/manage/listnopag.json', 'post', function(req) {
+mock('/api/manage/listnopag.json', 'post', function (req) {
   const { body } = req;
   const data = listApi(JSON.parse(body), true);
   return data;
 });
 
-mock('/api/manage/add.json', 'post', function(req) {
+mock('/api/manage/add.json', 'post', function (req) {
   const { body } = req;
   const data = addApi(JSON.parse(body));
   logInfo(req, data);
   return data;
 });
 
-mock('/api/manage/delete.json', 'post', function(req) {
+mock('/api/manage/delete.json', 'post', function (req) {
   const { body } = req;
   const data = deleteApi(JSON.parse(body));
   logInfo(req, data);
   return data;
 });
 
-mock('/api/manage/detail.json', 'post', function(req) {
+mock('/api/manage/detail.json', 'post', function (req) {
   const { body } = req;
   const data = detailApi(JSON.parse(body));
   logInfo(req, data);
   return data;
 });
 
-mock('/api/manage/statusList.json', function(req) {
+mock('/api/manage/statusList.json', function (req) {
   const data = getList(status);
   logInfo(req, data);
   return data;
 });
-mock('/api/manage/priceList.json', function(req) {
+mock('/api/manage/priceList.json', function (req) {
   const data = getList(priceProject);
   logInfo(req, data);
   return data;
 });
-mock('/api/manage/recipientList.json', function(req) {
+mock('/api/manage/recipientList.json', function (req) {
   const data = getList(recipientName);
   logInfo(req, data);
   return data;
 });
-mock('/api/manage/plugins.json', 'post', function(req) {
+mock('/api/manage/plugins.json', 'post', function (req) {
   const data = getPlugins();
   logInfo(req, data);
   return data;
 });
 
-mock('/api/techuiplugin.json', 'post', function(req) {
+mock('/api/techuiplugin.json', 'post', function (req) {
   const data = {
     ...success,
     data: {

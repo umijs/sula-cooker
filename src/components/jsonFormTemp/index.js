@@ -7,7 +7,7 @@ import FormDrawer from './component/formDrawer';
 import ControlDrawer from '@/components/jsonEditorDrawer';
 import TipsWrapper from '@/components/tipsWrapper';
 
-export default props => {
+export default (props) => {
   const {
     history,
     location,
@@ -16,6 +16,7 @@ export default props => {
     computedMatch,
     route,
     children,
+    routes,
     ...config
   } = props;
   const [formDrawerVisible, setFormDrawerVisible] = useState(false);
@@ -35,7 +36,6 @@ export default props => {
   function deleteItem(path) {
     const finalCode = { ...code };
     unset(finalCode, path);
-    console.log(finalCode, path);
     setCode(finalCode);
     setKey(key + 1);
   }
@@ -133,7 +133,7 @@ export default props => {
     });
   };
 
-  const getFieldsConfig = data => {
+  const getFieldsConfig = (data) => {
     const { steps, fields } = data;
     return isWizard
       ? { steps: getLabelFields(steps, ['steps']) }
@@ -160,7 +160,7 @@ export default props => {
   // 给个靠后点默认id，防止前面删掉后无数据
   const { id = 19 } = props.match.params;
 
-  const handleDo = val => {
+  const handleDo = (val) => {
     setCode(val);
     setFormDrawerVisible(false);
   };
@@ -173,7 +173,7 @@ export default props => {
 
   const Comp = isWizard ? StepForm : CreateForm;
 
-  const onRun = val => {
+  const onRun = (val) => {
     const { name: oldName } = controlValue;
     const { name, ...restVal } = { ...val };
     const newVal = oldName ? { name: oldName, ...restVal } : val;
@@ -186,19 +186,19 @@ export default props => {
     setKey(key + 1);
   };
 
-  const onModeChange = mode => {
+  const onModeChange = (mode) => {
     setMode(mode);
     setFormDrawerVisible(false);
     setKey(key + 1);
   };
 
-  const onDirectionChange = direction => {
+  const onDirectionChange = (direction) => {
     setDirection(direction);
     setFormDrawerVisible(false);
     setKey(key + 1);
   };
 
-  const onActionsPositionChange = position => {
+  const onActionsPositionChange = (position) => {
     setActionsPosition(position);
     setFormDrawerVisible(false);
     setKey(key + 1);
@@ -214,7 +214,7 @@ export default props => {
   const getClickItem = (data, name) => {
     const finalActions = data.map((action, idx) => {
       return {
-        type: ctx => {
+        type: (ctx) => {
           const children = triggerRenderPlugin(ctx, action);
           const path = [name, idx];
           return (
@@ -240,7 +240,7 @@ export default props => {
     return finalActions;
   };
 
-  const getActionConfig = data => {
+  const getActionConfig = (data) => {
     const { actionsRender, ...restProps } = { ...data };
     if (!actionsRender) return data;
     return {
